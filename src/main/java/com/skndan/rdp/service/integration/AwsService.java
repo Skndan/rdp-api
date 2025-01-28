@@ -340,7 +340,9 @@ public class AwsService {
     if (string == null) {
       throw new IllegalArgumentException("Input string cannot be null");
     }
-    return Base64.getEncoder().encodeToString(string.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    String base64 = Base64.getEncoder().encodeToString(string.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+    return base64.replaceAll("=", "");
   }
 
   /**
@@ -530,8 +532,8 @@ public class AwsService {
         Connection connection = guacamoleService.createConnection(res);
         res.setGuacamoleIdentifier(connection.getIdentifier());
 
-        String guacamoleConnectionString = convertBase64(connection.getIdentifier() + "/c/postgresql");
-        // base64 convert {identifier}/c/{dataSource}
+        String guacamoleConnectionString = convertBase64(connection.getIdentifier() + "\0c\0postgresql");
+        // base64 convert {identifier}\0c\0{dataSource}
         res.setGuacamoleConnectionString(guacamoleConnectionString);
       }
 
@@ -578,14 +580,17 @@ public class AwsService {
 
     RdpResponse response = new RdpResponse();
 
-    
     Instance instance = instanceRepo.findByInstanceId(instanceId)
-    .orElseThrow(() -> new GenericException(400, "Instance not found"));
-    
+        .orElseThrow(() -> new GenericException(400, "Instance not found"));
+
+    if (instance.getGuacamoleConnectionString() == null) {
+      throw new GenericException(204, "Waiting for connection");
+    }
+
     String token = guacamoleService.authenticate();
-    
+
     // FIXME: get the base url from application properties
-    String path = "https://127.0.0.1:8443/#/client/" + instance.getGuacamoleConnectionString() + "?token=" + token;
+    String path = "https://remote.skndan.cloud:8443/#/client/" + instance.getGuacamoleConnectionString() + "?token=" + token;
 
     response.setUrl(path);
 

@@ -72,9 +72,9 @@ public class GuacamoleService {
 
     Attributes attributes = new Attributes();
     attributes.setGuacdEncryption("none");
-    
+
     connection.setAttributes(attributes);
-    
+
     Parameters parameters = new Parameters();
     parameters.setHostname(instance.getPublicIpAddress());
     parameters.setPassword(instance.getPassword());
@@ -83,13 +83,13 @@ public class GuacamoleService {
     parameters.setPort("3389");
     parameters.setDomain(instance.getPublicDnsName());
     parameters.setUsername(instance.getUsername());
-    
+
     connection.setParameters(parameters);
-    
+
     // Check the authentication
     authenticate();
 
-    // WebClient call 
+    // WebClient call
     Connection connectionReponse = guacamoleClient.createConnection(dataSource, connection);
 
     return connectionReponse;

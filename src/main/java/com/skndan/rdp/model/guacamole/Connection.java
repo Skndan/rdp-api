@@ -2,7 +2,6 @@ package com.skndan.rdp.model.guacamole;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.Embedded;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;

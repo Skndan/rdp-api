@@ -18,7 +18,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 // FIXME: get the base url from application properties
-@RegisterRestClient(baseUri = "https://127.0.0.1:8443/api", configKey = "guacamole-api")
+@RegisterRestClient(baseUri = "https://remote.skndan.cloud:8443/api", configKey = "guacamole-api")
 @RegisterProvider(GuacamoleAuthRequestFilter.class)
 public interface GuacamoleClient {
 
