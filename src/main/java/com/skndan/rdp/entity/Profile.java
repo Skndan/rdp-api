@@ -2,6 +2,8 @@ package com.skndan.rdp.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -11,6 +13,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(name = "profile")
 public class Profile extends BaseEntity {
   
   @NotBlank(message = "First name should be present")
@@ -34,4 +37,6 @@ public class Profile extends BaseEntity {
 
   private String roleId;
 
+  @ManyToOne
+  private ProfileGroup group;
 }

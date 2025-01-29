@@ -10,14 +10,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PaginatedResponse<T> {
-  private List<T> items;
+  private List<T> content;
   private int currentPage;
   private int pageSize;
   private long totalItems;
   private int totalPages;
 
   public PaginatedResponse(List<T> items, int currentPage, int pageSize, long totalItems) {
-    this.items = items;
+    this.content = items;
     this.currentPage = currentPage;
     this.pageSize = pageSize;
     this.totalItems = totalItems;

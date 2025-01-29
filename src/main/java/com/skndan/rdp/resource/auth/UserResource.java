@@ -23,7 +23,6 @@ public class UserResource {
 
   @GET
   public Response resendVerificationEmail() {
-
     DefaultJWTCallerPrincipal jwtPrincipal = (DefaultJWTCallerPrincipal) securityIdentity.getPrincipal();
     String subject = jwtPrincipal.getSubject(); // Access the subject
     AuthResponse response = profileService.getProfile(subject);

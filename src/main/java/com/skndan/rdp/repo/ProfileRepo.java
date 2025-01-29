@@ -19,6 +19,8 @@ public interface ProfileRepo extends CrudRepository<Profile, UUID>, PagingAndSor
 
   Optional<Profile> findByEmail(String email);
 
-  Page<Profile> findAllByRoleId(String roleId, PageRequest of);
+  Page<Profile> findAllByRoleIdAndActive(String roleId, boolean status, PageRequest of);
+  
+  Page<Profile> findAllByGroupIdAndActive(UUID groupId, boolean status, PageRequest of);
 
 }

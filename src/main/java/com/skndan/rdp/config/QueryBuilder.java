@@ -38,14 +38,14 @@ public class QueryBuilder<T> {
         List<T> items = query.getResultList();
 
         // Build query for count
-        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        Root<T> countRoot = countQuery.from(entityClass);
-        countQuery.select(cb.count(countRoot)).where(predicate);
+        // CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        // Root<T> countRoot = countQuery.from(entityClass);
+        // countQuery.select(cb.count(countRoot)).where(predicate);
 
-        long totalItems = entityManager.createQuery(countQuery).getSingleResult();
+        // long totalItems = entityManager.createQuery(countQuery).getSingleResult();
 
         // Return paginated response
-        return new PaginatedResponse<T>(items, pageNumber, pageSize, totalItems);
+        return new PaginatedResponse<T>(items, pageNumber, pageSize, items.size());
     }
 
     private Predicate parsePredicate(String queryString, CriteriaBuilder cb, Root<T> root) {

@@ -10,7 +10,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import com.skndan.rdp.config.EntityCopyUtils;
+import com.skndan.rdp.config.PaginatedResponse;
+import com.skndan.rdp.config.QueryBuilder;
 import com.skndan.rdp.entity.Profile;
+import com.skndan.rdp.exception.GenericException;
 import com.skndan.rdp.model.SignUpRequest;
 import com.skndan.rdp.repo.ProfileFilterRepo;
 import com.skndan.rdp.repo.ProfileRepo;
@@ -20,6 +23,7 @@ import com.skndan.rdp.service.keycloak.KeycloakService;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -55,10 +59,10 @@ public class ProfileResource {
   ProfileFilterRepo profileFilterRepo;
 
   @Inject
-  EntityManager entityManager;
-
-  @Inject
   KeycloakService keycloakService;
+
+  @PersistenceContext
+  EntityManager entityManager;
 
   @GET
   public Response list(
@@ -73,27 +77,9 @@ public class ProfileResource {
     return Response.ok(user).status(200).build();
   }
 
-  // @GET
-  // @Path("/filter")
-  // public Response listFilter(
-  // @QueryParam("pageNo") @DefaultValue("0") int pageNo,
-  // @QueryParam("pageSize") @DefaultValue("25") int pageSize,
-  // @QueryParam("query") String query,
-  // @QueryParam("sortField") @DefaultValue("firstName") String sortField,
-  // @QueryParam("sortDir") @DefaultValue("ASC") String sortDir) {
-
-  // // department:HR and salary>:50000
-
-  // QueryBuilder<Profile> queryBuilder = QueryBuilder.create(entityManager,
-  // Profile.class);
-  // PaginatedResponse<Profile> user = queryBuilder.build(query, pageNo,
-  // pageSize);
-
-  // return Response.ok(user).status(200).build();
-  // }
-
   @GET
   @Path("/filter")
+  @Transactional
   public Response listFilter(
       @QueryParam("pageNo") @DefaultValue("0") int pageNo,
       @QueryParam("pageSize") @DefaultValue("25") int pageSize,
@@ -101,13 +87,11 @@ public class ProfileResource {
       @QueryParam("sortField") @DefaultValue("firstName") String sortField,
       @QueryParam("sortDir") @DefaultValue("ASC") String sortDir) {
 
-    // department:HR and salary>:50000
-
     Sort sortSt = sortDir.equals("DESC") ? Sort.by(sortField).descending() : Sort.by(sortField).ascending();
 
     RoleRepresentation roleRepresentation = keycloakService.findRoleByName(role);
 
-    Page<Profile> user = profileRepo.findAllByRoleId(roleRepresentation.getId(),
+    Page<Profile> user = profileRepo.findAllByRoleIdAndActive(roleRepresentation.getId(), true,
         PageRequest.of(pageNo, pageSize, sortSt));
     return Response.ok(user).status(200).build();
   }
@@ -115,25 +99,17 @@ public class ProfileResource {
   @GET
   @Path("/{id}")
   public Response getByID(@PathParam("id") UUID id) {
-    Optional<Profile> optional = profileRepo.findById(id);
+    Profile profile = profileRepo.findById(id)
+        .orElseThrow(() -> new GenericException(400, "No profile with id " + id + " exists"));
 
-    if (optional.isPresent()) {
-      Profile profile = optional.get();
-      return Response.ok(profile).status(200).build();
-    }
-
-    throw new IllegalArgumentException("No profile with id " + id + " exists");
+    return Response.ok(profile).status(200).build();
   }
 
   @POST
   @Transactional
-  public Response add(SignUpRequest profile) {
-    // if (profile.id != null) {
-    // throw new WebApplicationException("Id was invalidly set on request.", 422);
-    // }
-
-    Profile pro = authService.createProfile(profile);
-    return Response.ok(pro).status(201).build();
+  public Response add(SignUpRequest signUpRequest) {
+    Profile profile = authService.createProfile(signUpRequest);
+    return Response.ok(profile).status(201).build();
   }
 
   @DELETE
@@ -167,5 +143,15 @@ public class ProfileResource {
   public Response get_by_user(@PathParam("id") String id) {
     Optional<Profile> profile = profileRepo.findByUserId(id);
     return Response.ok(profile.get()).status(200).build();
+  }
+
+  @GET
+  @Path("/search")
+  public Response search(@QueryParam("query") String query) {
+
+    PaginatedResponse<Profile> response = QueryBuilder.create(entityManager, Profile.class)
+        .build(query, 0, 100);
+
+    return Response.ok(response).status(200).build();
   }
 }
